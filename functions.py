@@ -2,7 +2,7 @@ def clean_data(df):
     import pandas as pd
     df = df[['BP','Age','Height','Weight','foot','Growth','Value','Attacking','Skill','Movement','Power','Mentality','Defending',
               'Goalkeeping','Total Stats','Base Stats', 'W/F', 'SM', 'A/W','D/W', 'IR', 'PAC', 'SHO', 'PAS', 'DRI', 'DEF',
-              'PHY','OVA']]
+              'PHY','OVA']].copy()
     def feet_to_cm(height_str):
         feet, inches = map(int, height_str.replace('"', '').split("'"))
         total_inches = (feet * 12) + inches
@@ -39,3 +39,25 @@ def clean_data(df):
     df['D/W'] = df['D/W'].fillna('Medium')
         
     return df
+
+def y_X(df,z):
+    
+    import pandas as pd
+    
+    y = df[z]
+    categorical = df.select_dtypes('object')
+    numerical = df._get_numeric_data().drop([z], axis=1)
+    
+    from sklearn.preprocessing import MinMaxScaler
+    transformer = MinMaxScaler().fit(numerical)
+    numerical_scaled = transformer.transform(numerical)
+    numerical_scaled = pd.DataFrame(numerical_scaled, columns=numerical.columns)
+    
+    from sklearn.preprocessing import OneHotEncoder
+    encoder = OneHotEncoder(drop='first').fit(categorical)
+    cols = encoder.get_feature_names_out(input_features=categorical.columns)
+    categorical_encode = pd.DataFrame(encoder.transform(categorical).toarray(),columns=cols)
+    
+    X = pd.concat([numerical_scaled, categorical_encode], axis=1)
+    
+    return y, X
